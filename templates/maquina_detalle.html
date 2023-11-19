@@ -35,6 +35,9 @@
                     <tr>
                         <th colspan="2" style="vertical-align: middle; text-align: center;"><button id="sensorButton" class="btn btn-info">Encender Sensor</button></th>
                     </tr>
+                    <tr>
+                        <th colspan="2" style="vertical-align: middle; text-align: center;"><button id="resetContador" class="btn btn-info">Reiniciar Generador</button></th>
+                    </tr>
                 </table>
             </div>
 
@@ -219,6 +222,25 @@
                     console.error('Error:', error);
                 });
         });
+
+        resetContador.addEventListener("click", function () {
+            fetch('/reset_generador', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ product_id: productID })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Aquí puedes realizar acciones con la respuesta del servidor
+                console.log(data); // Puedes mostrar la respuesta en la consola o realizar otras acciones
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+
         function actualizarSensor(encendido) {
             if (encendido) {
                 sensorEstado.textContent = "Encendido";

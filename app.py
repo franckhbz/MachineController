@@ -142,6 +142,33 @@ def update():
 def index():
     return render_template('index.html', maquinas=maquinas)
 
+@app.route('/reset_generador', methods=['POST'])
+def reset_generador():
+    global notificaciones
+    data = request.get_json()
+    product_id = data['product_id']
+    notificaciones = [notificacion for notificacion in notificaciones if 'product_id' not in notificacion]
+    for maquina in maquinas:
+        if maquina['product_id'] == product_id:
+            maquina['contador_datos_simulados'] = 0
+            maquina['contador_tiempo'] = 0
+            maquina['ultimo_tool_wear'] = None
+            maquina['ultimo_root_speed'] = None
+            maquina['ultimo_air_temp'] = None
+            maquina['ultimo_process_temp'] = None
+            maquina['ultimo_torque_temp'] = None
+            maquina['start_time_tool_temp'] = time.time()
+            maquina['start_time_root_temp'] = time.time()
+            maquina['start_time_air_temp'] = time.time()
+            maquina['start_time_proces_temp'] = time.time()
+            maquina['start_time_torque_temp'] = time.time()
+            return jsonify({'mensaje': 'Generador reseteado exitosamente.', 'estado_sensor': maquina['estado_sensor']})
+    
+    return jsonify({'mensaje': 'No se encontró ninguna máquina con el product_id proporcionado.'})
+
+
+
+
 @app.route('/maquina_detalle.html')
 def maquina_detalle():
     # Puedes utilizar estos valores para renderizar maquina_detalle.html o realizar otras acciones
@@ -237,5 +264,5 @@ def regresar():
     return render_template('index.html', maquinas=maquinas)
 
 
-# if __name__ == '__main__':
-#     app.run(debug=True,port= 5005)
+if __name__ == '__main__':
+    app.run(debug=True,port= 5005)
