@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Máquinas</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="static/css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
+</head>
+
+<body>
+    <header class="custom-header text-white text-center">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 d-flex align-items-center">
+                    <button id="notificaciones" class="btn btn-lg btn-success">0</button>
+                    <h1 class="ml-3">Central de Monitoreo</h1>
+                </div>
+                
+                <div class="col-md-6">
+                    <button id="agregarMaquina" class="btn btn-info btn-lg">Agregar Máquina</button>
+                </div>
+            </div>
+        </div>
+    </header>
+    <div class="modal fade" id="miModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Detalle de alertas</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <!-- El texto del modal se establecerá dinámicamente desde JavaScript -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+
+    <div class="container">
+        <div class="row" id="maquinas">
+        </div>
+    </div>
+
+    <!-- Modal para el formulario -->
+    <div class="modal" id="agregarMaquinaModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Agregar Máquina</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="maquinaForm">
+                        <div class="form-group">
+                            <label for="product_id">Product ID</label>
+                            <input type="text" class="form-control" id="product_id" name="product_id"
+                                pattern="^[MHL][0-9]{5}$" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="id_sensor">ID Sensor</label>
+                            <input type="text" class="form-control" id="id_sensor" name="id_sensor" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        
+    </script>
+    <script>
+        function calcularDiferenciaFechas(fechaInicioStr, fechaFinStr) {
+  // Convierte las cadenas de fecha a objetos Date
+            const fechaInicio = new Date(fechaInicioStr);
+            const fechaFin = new Date(fechaFinStr);
+
+            // Calcula la diferencia en milisegundos
+            const diferenciaMilisegundos = fechaFin - fechaInicio;
+
+            // Convierte la diferencia a días, horas y minutos
+            const milisegundosPorDia = 24 * 60 * 60 * 1000;
+            const milisegundosPorHora = 60 * 60 * 1000;
+            const milisegundosPorMinuto = 60 * 1000;
+
+            const dias = Math.floor(diferenciaMilisegundos / milisegundosPorDia);
+            const horas = Math.floor((diferenciaMilisegundos % milisegundosPorDia) / milisegundosPorHora);
+            const minutos = Math.floor((diferenciaMilisegundos % milisegundosPorHora) / milisegundosPorMinuto);
+
+            // Construye el texto de la diferencia
+            let diferenciaTexto = '';
+
+            if (dias > 0) {
+                diferenciaTexto += `${dias} día${dias > 1 ? 's' : ''}`;
+            }
+
+            if (horas > 0) {
+                if (dias > 0) {
+                diferenciaTexto += ' ';
+                }
+                diferenciaTexto += `${horas} hora${horas > 1 ? 's' : ''}`;
+            }
+
+            if (minutos >= 0 && dias == 0) {
+                if (dias > 0 || horas > 0) {
+                diferenciaTexto += ' y ';
+                }
+                diferenciaTexto += `${minutos} minuto${minutos > 1 ? 's' : ''}`;
+            }
+
+            return `Hace ${diferenciaTexto} `;
+        }
+
+
+    
+        function verDetalles(product_id, id_sensor) {
+            // Redirige al usuario a maquina_detalle.html con los parámetros en la URL
+            const fecha_actual = new Date().toISOString();
+            const actualizaciones = {
+                    product_id: product_id,
+                    ultima_revision: fecha_actual
+                };
+            fetch('/fechar_revision', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(actualizaciones),
+                })
+           window.open(`/maquina_detalle.html?product_id=${product_id}&id_sensor=${id_sensor}`, '_blank');
+        }
+        // Función para abrir el modal y establecer el contenido
+        function abrirModalConTexto(texto) {
+            // Obtén el elemento modal y el elemento donde mostrar el texto
+            var modal = document.getElementById('miModal');
+            var contenidoModal = modal.querySelector('.modal-body');
+    
+            // Establece el contenido del modal con el texto proporcionado
+            contenidoModal.style.whiteSpace = 'pre-line';
+            contenidoModal.textContent = texto;
+    
+            // Abre el modal
+            $(modal).modal('show');
+        }
+    
+        
+        document.addEventListener("DOMContentLoaded", function () {
+            
+            const agregarMaquinaModal = $('#agregarMaquinaModal');
+            const maquinaForm = document.getElementById("maquinaForm");
+            const maquinasDiv = document.getElementById("maquinas");
+
+            $('#agregarMaquina').on('click', function () {
+                agregarMaquinaModal.modal('show'); // Muestra el modal con el método de Bootstrap
+            });
+
+            maquinaForm.addEventListener("submit", function (e) {
+                e.preventDefault();
+
+                const product_id = document.getElementById("product_id").value;
+                const id_sensor = document.getElementById("id_sensor").value;
+                const fecha_actual = new Date().toLocaleString();
+                const maquina = {
+                    product_id: product_id,
+                    id_sensor: id_sensor,
+                    estado_sensor: false,
+                    fecha_inicio: fecha_actual,
+                    ultima_revision: null
+                };
+
+                // Enviar los datos al servidor
+                fetch('/agregar_maquina', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(maquina),
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.message === 'Máquina agregada con éxito') {
+                            // Actualizar la lista de máquinas con los datos recibidos del servidor
+                            actualizarListaMaquinas();
+                            agregarMaquinaModal.style.display = "none";
+                        } else {
+                            alert(data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+            });
+
+            // Función para actualizar el estado del sensor en tiempo real
+            function actualizarEstadoSensor(productID, estadoSensor) {
+                // Encuentra el elemento del estado del sensor por su ID único
+                const estadoSensorElement = document.getElementById(`estadoSensor_${productID}`);
+
+                if (estadoSensorElement) {
+                    // Actualiza el estado y la apariencia
+                    estadoSensorElement.textContent = `Sensor ${estadoSensor ? 'Encendido' : 'Apagado'}`;
+                    estadoSensorElement.className = `badge badge-${estadoSensor ? 'success' : 'danger'} ml-2`;
+                }
+            }
+            function calcularPuntajeDeGravedad(estado) {
+                // Verificar si estado está definido
+                if (!estado) {
+                    console.log("Estado indefinido encontrado");
+                    return 0; // O asignar un valor predeterminado si es apropiado
+                }
+                let puntaje = 0;
+                estado.forEach(est => {
+                    switch (est[1]) {
+                        case 'Grave': puntaje += 125; break;
+                        case 'Promedio': puntaje += 25; break;
+                        case 'Ligero': puntaje += 5; break;
+                        case 'Normal': puntaje += 1; break;
+                        default: puntaje += 0; // Desconocido o cualquier otro estado
+                    }
+                });
+                return puntaje;
+            }
+
+            // Función para obtener y actualizar la lista de máquinas desde el servidor
+            function actualizarListaMaquinas() {
+                fetch('/lista_maquinas', {
+                    method: 'GET',
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Limpiar el contenedor de máquinas
+                        maquinasDiv.innerHTML = '';
+                        data.maquinas.sort((a, b) => {
+                            const puntajeA = calcularPuntajeDeGravedad(a.estado);
+                            const puntajeB = calcularPuntajeDeGravedad(b.estado);
+                            return puntajeB - puntajeA; // Orden descendente
+                        });
+                        // Agregar las máquinas actualizadas al contenedor
+                        data.maquinas.forEach(maquina => {
+                            agregarMaquina(maquina);
+                            // Llama a la función para actualizar el estado del sensor
+                            actualizarEstadoSensor(maquina.product_id, maquina.estado_sensor);
+                            
+                            });
+                            // Obtener el botón de notificaciones
+                        var notificacionesBtn = document.getElementById('notificaciones');
+                        // Actualizar el contenido del botón y su color
+                        if (data.notificaciones.length > 0) {
+                            notificacionesBtn.textContent = data.notificaciones.length;
+                            notificacionesBtn.classList.remove('btn-success');
+                            notificacionesBtn.classList.add('btn-danger');
+                        } else {
+                            notificacionesBtn.textContent = '0';
+                            notificacionesBtn.classList.remove('btn-danger');
+                            notificacionesBtn.classList.add('btn-success');
+                        }
+                            // Escucha el clic en el botón "notificaciones"
+                        document.getElementById('notificaciones').addEventListener('click', function () {
+                                // Texto que deseas mostrar en el modal
+                            var textoModal = data.notificaciones.join('\n');
+                            abrirModalConTexto(textoModal);
+                        });
+                        
+                    })
+                    .catch(error => {
+                        console.error('Error al obtener la lista de máquinas:', error);
+                    });
+            }
+
+
+            // Función para agregar una máquina al contenedor
+            function agregarMaquina(maquina) {
+                function claseSegunEstado(estado) {
+                    switch (estado) {
+                        case 'Grave': return 'btn-danger';   // Rojo
+                        case 'Promedio': return 'btn-warning'; // Naranja
+                        case 'Ligero': return 'btn-yellow';  // Amarillo
+                        case 'Normal': return 'btn-success'; // Verde
+                        default: return 'btn-secondary';    // Gris
+                    }
+                }
+                function generarBotonesNotificacion(maquina) {
+                    let htmlBotones = '';
+                    for (let i = 0; i < 5; i++) {
+                        const claseColor = claseSegunEstado(maquina.estado[i][1]);
+                        htmlBotones += `<button class="btn ${claseColor} btn-sm rounded-circle" style="width: 30px; height: 30px;margin-right: 5px;margin-top: 5px;"></button>`;
+                    }
+                    return htmlBotones;
+                }
+
+                // En tu código donde creas la tarjeta de la máquina:
+                const botonesNotificacion = generarBotonesNotificacion(maquina);
+                
+                if (maquina.product_id[0]=='H'){ numaq=1 }
+                else if (maquina.product_id[0]=='M'){ numaq=2 }
+                else if (maquina.product_id[0]=='L'){ numaq=3 }
+                else { numaq=1 }
+                const maquinaDiv = document.createElement("div");
+                maquinaDiv.className = "col-lg-4 col-md-6 col-sm-12 mb-4";
+                const fecha_actual = new Date().toISOString();
+                const fechaInicio = maquina.fecha_inicio ?? 'No iniciado';
+                const dif_revision= calcularDiferenciaFechas(maquina.ultima_revision,fecha_actual)
+                const ultimaRevision = maquina.ultima_revision!= null ? dif_revision:"Sin revisiones";
+                maquinaDiv.innerHTML = `
+                
+            <div class="card">
+            <img src="static/img/maquina${numaq}.png" class="card-img-top" alt="Imagen 1">
+            <div class="notification-icon d-flex justify-content-center align-items-center">
+                ${botonesNotificacion}
+            </div>
+            <div class="card-body"style="margin-top: 5px;margin-left: 20px;" >
+            <span class="badge badge-${maquina.estado_sensor ? 'success' : 'danger'} ml-2 ">
+            Sensor ${maquina.estado_sensor ? 'Encendido' : 'Apagado'}
+            </span>
+            <h5 class="card-title"><strong>${maquina.product_id}</strong></h5>
+            <h6 class="card-subtitle mb-2 text-muted">Fecha de inicio:</h6>
+            <p class="card-text">${maquina.fecha_inicio}</p>
+            <h6 class="card-subtitle mb-2 text-muted">Modelo:</h6>
+            <p class="card-text">Motorbomba</p>
+            <h6 class="card-subtitle mb-2 text-muted">Id del sensor:</h6>
+            <p class="card-text">${maquina.id_sensor}</p>
+            <h6 class="card-subtitle mb-2 text-muted">Última revisión:</h6>
+            <p class="card-text">${ultimaRevision}</p>
+            <button class="btn btn-info btn-sm ml-2" onclick="verDetalles('${maquina.product_id}','${maquina.id_sensor}')">Ver Detalles</button>
+        </div>
+        </div>
+        `;
+
+                maquinasDiv.appendChild(maquinaDiv);
+            }
+
+            // Llama a la función para obtener la lista de máquinas al cargar la página
+            setInterval(actualizarListaMaquinas, 2000);
+            
+        });
+
+
+
+    </script>
+
+</body>
+
+</html>

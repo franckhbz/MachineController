@@ -1,0 +1,103 @@
+/* Colores de la paleta */
+:root {
+    --industrial-blue: #2b3e50;
+    --industrial-grey: #f2f2f2;
+    --industrial-orange: #f28d35;
+    --text-black: #000000;
+    --text-white: #ffffff;
+}
+
+/* Aplicando la fuente Google Fonts en todo el documento */
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--industrial-grey);
+    color: var(--text-black);
+}
+
+/* Encabezados y títulos */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.industrial-card {
+    background-color: var(--text-white);
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.card-header {
+    background-color: var(--industrial-blue);
+    color: var(--text-white);
+    padding: 15px;
+    position: relative;
+}
+
+.machine-title {
+    font-size: 1.5rem; /* 24px */
+}
+
+.status-indicator {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background-color: var(--industrial-orange);
+    color: var(--text-white);
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.machine-image {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.card-body {
+    padding: 15px;
+}
+
+.machine-info {
+    line-height: 1.6;
+    margin-bottom: 10px;
+}
+
+.machine-info strong {
+    color: var(--industrial-blue);
+}
+
+/* Botones y enlaces */
+.button, .botonDerecha, a {
+    background-color: var(--industrial-blue);
+    color: var(--text-white);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-transform: uppercase;
+    text-decoration: none;
+    display: inline-block;
+    margin-top: 10px;
+}
+
+.button:hover, .botonDerecha:hover, a:hover {
+    background-color: var(--industrial-orange);
+}
+
+/* Añadir más estilos personalizados según sea necesario */
+
+.custom-header {
+    background-color: #2b3e50;
+}
+.btn-yellow {
+    background-color: yellow;
+}
+.btn-warning {
+    background-color: orange;
+}
+.btn-secondary{
+    background-color: gray;
+}

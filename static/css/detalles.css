@@ -1,0 +1,16 @@
+body {
+  background-color: #f2f2f2; /* Cambia este color al que desees */
+}
+.container-custom {
+  max-width: 90%; /* O un porcentaje específico más grande que el predeterminado */
+}
+
+.columna {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+/* .chart-container canvas {
+  background-color: rgba(255, 255, 255, 1); *//* Color de fondo blanco 
+} */

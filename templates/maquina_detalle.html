@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalles de la Máquina</title>
+    <!-- Agrega la referencia a Bootstrap CSS -->
+    
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="static/css/detalles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container container-custom mt-4">
+        <div style="display: flex;">
+
+            <!-- Columna Izquierda: Imagen y Datos de la Máquina -->
+            <div style="flex: 1; padding: 10px; display: flex; flex-direction: column; align-items: center;     ">
+                <img id="imagenMaquina" src="" class="card-img-top" alt="Imagen 1" style="max-width: 100%; margin-bottom: 20px;">
+                
+                <table class="table">
+                    <tr>
+                        <th>Product ID:</th>
+                        <th><span id="productID"></span></th>
+                    </tr>
+                    <tr>
+                        <th>ID Sensor:</th>
+                        <th><span id="IDSensor"></span></th>
+                    </tr>
+                    <tr>
+                        <th>Sensor:</th>
+                        <th><span id="sensorEstado"></span></th>
+                    </tr>
+                    <tr>
+                        <th colspan="2" style="vertical-align: middle; text-align: center;"><button id="sensorButton" class="btn btn-info">Encender Sensor</button></th>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Columna Central: Gráficas -->
+            <div id="graficas" style="flex: 4; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;">
+                <!-- Contenido de las gráficas -->
+            </div>
+
+            <!-- Columna Derecha: Datos Simulados -->
+            <div id="simulacion" style="flex: 1; padding: 10px; display: flex; flex-direction: column; align-items: center;">
+                
+                <table id="datos-simulados" class="table table-bordered">
+                    
+                </table>
+                <table id="estados" class="table table-bordered">
+                    
+                </table>
+            </div>
+
+        </div>
+    </div>
+    <!-- Contenedor para el gráfico espectral -->
+    <!-- Agrega la referencia a Bootstrap JS y jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        
+        var tiempo = 0;
+        var tiposInteres = ['TWF', 'HDF', 'PWF', 'OSF', 'RNF'];
+        var charts = {};
+        // Crear gráficas para cada tipo de falla en las filas y columnas
+        tiposInteres.forEach(function (tipoFalla, index) {
+
+            var chartContainer = document.createElement('div');
+            chartContainer.className = "chart-container";
+            document.getElementById("graficas").appendChild(chartContainer);
+            var canvas = document.createElement('canvas');
+            canvas.id = tipoFalla + 'Chart';
+            chartContainer.appendChild(canvas);
+            var coloresFijos = ['#FF5733', '#33FF57', '#3357FF', '#FF33F6', '#F6FF33'];
+            charts[tipoFalla] = new Chart(canvas, {
+                type: 'line',
+                data: {
+                    datasets: [{
+                        label: tipoFalla,
+                        borderColor:  coloresFijos[index % coloresFijos.length],
+                        backgroundColor: 'rgba(255, 255, 255, 0.5)', 
+                        fill: true,
+                        data: []
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom'
+                        },
+                        y: {
+                            type: 'linear',
+                            min: 0,
+                            max: 1,
+                            ticks: {
+                            // Formateador para convertir valores a porcentajes
+                            callback: function(value, index, values) {
+                                return (value * 100).toFixed(0) + '%'; // Convierte a porcentaje
+                            }
+                         }
+                        }
+                }}
+            });
+        });
+
+        function actualizarDatos(datosSimulados, predicciones,estados) {
+            var datosSimuladosTable = document.getElementById("datos-simulados");
+            var estadosTable = document.getElementById("estados");
+            datosSimuladosTable.innerHTML = '<tr><th>Característica</th><th>Valor</th></tr>';
+            estadosTable.innerHTML = '<tr><th>Estado</th><th>Valor</th></tr>';
+            for (var key in datosSimulados) {
+                var row = datosSimuladosTable.insertRow(-1);
+                var cell1 = row.insertCell(0);
+                var cell2 = row.insertCell(1);
+                cell1.innerHTML = key;
+                cell2.innerHTML = datosSimulados[key];
+            }
+
+            for (var key in estados) {
+                var row = estadosTable.insertRow(-1);
+                var cell1 = row.insertCell(0);
+                var cell2 = row.insertCell(1);
+                cell1.innerHTML = key;
+                cell2.innerHTML = estados[key];
+            }
+
+            tiposInteres.forEach(function (tipoFalla) {
+                charts[tipoFalla].data.datasets[0].data.push({ x: tiempo, y: predicciones[tipoFalla] });
+                charts[tipoFalla].update();
+            });
+
+            tiempo++;
+        }
+        function getRandomColor() {
+            var letters = '0123456789ABCDEF';
+            var color = '#';
+            for (var i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+    </script>
+    <script>
+        
+        const params = new URLSearchParams(window.location.search);
+        const productID = params.get("product_id");
+        const IDSensor = params.get("id_sensor");
+        function cambiarImagen(imagenMaquina) {
+            if (params.get("product_id")[0]=='H'){ imagenMaquina.src = "static/img/maquina1.png"; }
+                else if (params.get("product_id")[0]=='M'){ imagenMaquina.src = "static/img/maquina2.png"; }
+                else if (params.get("product_id")[0]=='L'){ imagenMaquina.src = "static/img/maquina3.png"; }
+                else { imagenMaquina.src = "static/img/maquina1.png"; }
+        }
+        const imagenMaquina = document.getElementById("imagenMaquina");
+        cambiarImagen(imagenMaquina);
+        document.getElementById("productID").textContent = productID;
+        document.getElementById("IDSensor").textContent = IDSensor;
+
+        const sensorEstado = document.getElementById("sensorEstado");
+        const sensorButton = document.getElementById("sensorButton");
+
+        // Función para cargar el estado actual del sensor
+        function cargarEstadoSensor() {
+            fetch('/obtener_estado_sensor', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ product_id: productID })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    actualizarSensor(data.estado_sensor);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        cargarEstadoSensor();
+
+        sensorButton.addEventListener("click", function () {
+            fetch('/actualizar_sensor', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ product_id: productID })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    actualizarSensor(data.estado_sensor);
+                    // Agregar lógica para iniciar la generación de datos y predicciones
+                    if (data.estado_sensor) {
+                        
+                        function actualizarDesdeServidor() {
+                            console.log("Enviando solicitud a /update con posicion:", data.index);
+                            fetch('/update', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({ posicion: data.index })
+                            })
+                                .then(response => response.json())
+                                .then(data => {
+                                    actualizarDatos(data.datos_simulados, data.predicciones, data.estado);
+                                });
+                        }
+                        setInterval(actualizarDesdeServidor, 1000);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        });
+        function actualizarSensor(encendido) {
+            if (encendido) {
+                sensorEstado.textContent = "Encendido";
+                sensorEstado.classList.add("text-success");
+                sensorEstado.classList.remove("text-danger");
+                sensorButton.textContent = "Apagar Sensor";
+            } else {
+                sensorEstado.textContent = "Apagado";
+                sensorEstado.classList.remove("text-success");
+                sensorEstado.classList.add("text-danger");
+                sensorButton.textContent = "Encender Sensor";
+            }
+        }
+    </script>
+</body>
+</html>

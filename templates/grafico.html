@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gráfico Espectral Iterativo</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <div id="grafico-espectral"></div>
+    <script>
+        const ancho = 600;
+        const alto = 300;
+        const duracion = 1000; // Duración de la animación en milisegundos
+        const numDatos = 60;  // Número de datos a mostrar
+
+        // Crear un contenedor para el gráfico
+        const svg = d3.select("#grafico-espectral")
+            .append("svg")
+            .attr("width", ancho)
+            .attr("height", alto);
+
+        // Generar datos iniciales (valores entre 0 y 1)
+        let datos = d3.range(numDatos).map(() => Math.random());
+
+        // Escaladores para los ejes X e Y
+        const escalaX = d3.scaleLinear()
+            .domain([0, numDatos - 1])
+            .range([0, ancho]);
+
+        const escalaY = d3.scaleLinear()
+            .domain([0, 1])
+            .range([alto, 0]);
+
+        // Crear una función que actualiza el gráfico
+        function actualizarGrafico() {
+            // Seleccionar todos los rectángulos existentes
+            const rectangulos = svg.selectAll("rect")
+                .data(datos);
+
+            // Actualizar los datos de los rectángulos existentes
+            rectangulos
+                .transition()
+                .duration(duracion)
+                .attr("x", (d, i) => escalaX(i))
+                .attr("y", d => escalaY(d))
+                .attr("width", ancho / numDatos)
+                .attr("height", d => alto - escalaY(d));
+
+            // Agregar nuevos rectángulos si es necesario
+            rectangulos.enter()
+                .append("rect")
+                .attr("x", (d, i) => escalaX(i))
+                .attr("y", d => escalaY(d))
+                .attr("width", ancho / numDatos)
+                .attr("height", d => alto - escalaY(d))
+                .attr("fill", "steelblue");
+
+            // Eliminar rectángulos si hay demasiados
+            rectangulos.exit().remove();
+        }
+
+        // Actualizar el gráfico inicial
+        actualizarGrafico();
+
+        // Función para agregar un nuevo valor de datos
+        function agregarNuevoDato() {
+            const nuevoDato = Math.random();
+            datos.push(nuevoDato);
+            datos.shift();  // Eliminar el valor más antiguo
+            actualizarGrafico();
+        }
+
+        // Agregar nuevos datos periódicamente (cada 1 segundo)
+        setInterval(agregarNuevoDato, 1000);
+    </script>
+</body>
+</html>
