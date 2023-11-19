@@ -239,5 +239,5 @@ def regresar():
     return render_template('index.html', maquinas=maquinas)
 
 
-if __name__ == '__main__':
-    app.run(debug=True,port= 5005)
+# if __name__ == '__main__':
+#     app.run(debug=True,port= 5005)
