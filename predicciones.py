@@ -5,7 +5,6 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 import keras
 import time
-import matplotlib.pyplot as plt
 
 # Cargar los datos y preprocesarlos
 df = pd.read_csv('ai4i2020.csv')
@@ -67,9 +66,6 @@ product_id = "M14860"
 
 # Crear una figura con subplots solo para los tipos de interés
 tipos_interes = ['TWF', 'HDF', 'PWF', 'OSF', 'RNF']
-fig, axs = plt.subplots(len(tipos_interes), 1, figsize=(10, 12))
-fig.canvas.mpl_connect(
-    'key_press_event', lambda event: event.key == 'q' and plt.close(fig))
 
 # Contador para enumerar los datos simulados
 contador_datos_simulados = 0

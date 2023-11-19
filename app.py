@@ -9,8 +9,6 @@ app = Flask(__name__)
 maquinas = []
 notificaciones = []
 
-
-
 # Inicializa contadores de estados por tipo de falla
 contadores_estados = {tipo: {'estado_actual': None, 'contador': 0} for tipo in tipos_interes}
 
