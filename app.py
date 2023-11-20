@@ -27,7 +27,7 @@ def verificar_alerta(tipo, estado,product_id):
         if contadores_estados[tipo]['estado_actual'] == estado:
             contadores_estados[tipo]['contador'] += 1
             if contadores_estados[tipo]['contador'] >= 3:
-                mensaje_alerta = f'Maquina "{product_id}": Se ha detectado el estado "{estado}" para la falla {tipo} tres veces seguidas.'
+                mensaje_alerta = f'Maquina "{product_id}":(81% de precisión) Se ha detectado el estado "{estado}" para la falla {tipo} tres veces seguidas.'
                 ultima_alerta_tiempo[tipo] = tiempo_actual  # Actualizar el tiempo de la última alerta
                 notificaciones.append(mensaje_alerta)
                 ultima_alerta_tiempo[tipo] = tiempo_actual  # Actualizar el tiempo de la última alerta
